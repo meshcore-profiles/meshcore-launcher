@@ -1,0 +1,144 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:MeshCoreLauncher.ViewModels"
+        xmlns:conv="using:MeshCoreLauncher.Converters"
+        xmlns:convCore="using:Avalonia.Data.Converters"
+        x:Class="MeshCoreLauncher.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="MeshCore Launcher"
+        Icon="avares://MeshCoreLauncher/Assets/icon.ico"
+        Width="520" Height="460"
+        CanResize="False"
+        WindowStartupLocation="CenterScreen"
+        Background="Transparent"
+        TransparencyLevelHint="Transparent"
+        WindowDecorations="None">
+
+	<Window.Resources>
+		<conv:StatusKindToBrushConverter x:Key="StatusKindToBrush" />
+	</Window.Resources>
+
+	<Border x:Name="RootPanel" CornerRadius="16" Background="{StaticResource Brush.Bg}"
+	        BorderBrush="{StaticResource Brush.Border}" BorderThickness="1" ClipToBounds="True"
+	        Opacity="0" RenderTransform="scale(0.97)" RenderTransformOrigin="0.5,0.5">
+		<Border.Transitions>
+			<Transitions>
+				<DoubleTransition Property="Opacity" Duration="0:0:0.28" />
+				<TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.28" Easing="CubicEaseOut" />
+			</Transitions>
+		</Border.Transitions>
+
+		<Grid RowDefinitions="44,Auto,*,Auto,Auto,Auto">
+
+			<!-- Custom title bar -->
+			<Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto" Background="Transparent" Cursor="SizeAll" PointerPressed="TitleBar_PointerPressed" Margin="14,0,8,0">
+				<Border Grid.Column="0" Width="24" Height="24" CornerRadius="6" ClipToBounds="True" VerticalAlignment="Center">
+					<Image Source="avares://MeshCoreLauncher/Assets/icon.ico" Width="24" Height="24" Stretch="UniformToFill" />
+				</Border>
+				<TextBlock Grid.Column="1" Text="MeshCore Launcher" Margin="10,0,0,0" VerticalAlignment="Center"
+				           FontSize="13" FontWeight="Medium" Foreground="{StaticResource Brush.TextSecondary}" />
+				<Button Grid.Column="2" Classes="icon-static" Command="{Binding OpenAppFolderCommand}" ToolTip.Tip="Open app folder">
+					<Path Classes="glyph" Data="M3 7a2 2 0 012-2h4l2 2h6a2 2 0 012 2v7a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" />
+				</Button>
+				<Button Grid.Column="3" Classes="icon" Command="{Binding OpenSettingsCommand}" ToolTip.Tip="Settings">
+					<Path Classes="glyph" Data="M12 15a3 3 0 100-6 3 3 0 000 6z M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z" />
+				</Button>
+				<Button Grid.Column="4" Classes="chrome" Click="Minimize_Click" Margin="4,0,0,0">
+					<Path Classes="glyph" Data="M0,7 H14" Stretch="None" />
+				</Button>
+				<Button Grid.Column="5" Classes="chrome close" Click="Close_Click" Margin="4,0,0,0">
+					<Path Classes="glyph" Data="M18 6L6 18M6 6l12 12" />
+				</Button>
+			</Grid>
+
+			<!-- Hairline signal accent -->
+			<Border Grid.Row="1" Height="1" Margin="0">
+				<Border.Background>
+					<LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
+						<GradientStop Offset="0" Color="#0022D3EE" />
+						<GradientStop Offset="0.5" Color="#8022D3EE" />
+						<GradientStop Offset="1" Color="#0022D3EE" />
+					</LinearGradientBrush>
+				</Border.Background>
+			</Border>
+
+			<!-- Hero -->
+			<Grid Grid.Row="2" VerticalAlignment="Center">
+				<Grid RowDefinitions="Auto,Auto" Margin="32,8">
+
+					<Grid Grid.Row="0" Width="140" Height="140" HorizontalAlignment="Center">
+						<Ellipse Classes="pulse-glow" Width="140" Height="140">
+							<Ellipse.Fill>
+								<RadialGradientBrush>
+									<GradientStop Offset="0" Color="#4022D3EE" />
+									<GradientStop Offset="0.6" Color="#1A22D3EE" />
+									<GradientStop Offset="1" Color="#0022D3EE" />
+								</RadialGradientBrush>
+							</Ellipse.Fill>
+						</Ellipse>
+						<Border Width="84" Height="84" CornerRadius="20" ClipToBounds="True"
+						        HorizontalAlignment="Center" VerticalAlignment="Center">
+							<Image Source="avares://MeshCoreLauncher/Assets/mc-logo.png" Width="84" Height="84" Stretch="UniformToFill" />
+						</Border>
+					</Grid>
+
+					<Grid Grid.Row="1" RowDefinitions="Auto,Auto,Auto" Margin="0,18,0,0">
+						<StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
+							<Ellipse Classes="status-dot" Width="9" Height="9" VerticalAlignment="Center"
+							         Fill="{Binding StatusKind, Converter={StaticResource StatusKindToBrush}}" />
+							<TextBlock Text="{Binding StatusText}" FontSize="15" FontWeight="SemiBold"
+							           Foreground="{StaticResource Brush.TextPrimary}"
+							           TextWrapping="Wrap" TextAlignment="Center" MaxWidth="380" />
+						</StackPanel>
+						<TextBlock Grid.Row="1" Text="{Binding DetailText}" FontFamily="Cascadia Mono,Consolas,monospace" FontSize="11.5"
+						           Foreground="{StaticResource Brush.TextDim}" HorizontalAlignment="Center" Margin="0,6,0,0"
+						           IsVisible="{Binding DetailText, Converter={x:Static convCore:StringConverters.IsNotNullOrEmpty}}" />
+						<TextBlock Grid.Row="2" Text="{Binding SystemText}" FontFamily="Cascadia Mono,Consolas,monospace" FontSize="11.5"
+						           Foreground="{StaticResource Brush.TextDim}" HorizontalAlignment="Center" Margin="0,4,0,0" />
+					</Grid>
+				</Grid>
+			</Grid>
+
+			<!-- Progress -->
+			<Grid Grid.Row="3" Margin="32,0,32,14" IsVisible="{Binding IsProgressVisible}" RowDefinitions="Auto,Auto">
+				<ProgressBar Grid.Row="0" Height="4" CornerRadius="2"
+				             Minimum="0" Maximum="100" Value="{Binding Progress}"
+				             Foreground="{StaticResource Brush.Accent}" Background="{StaticResource Brush.Border}" />
+				<Grid Grid.Row="1" Margin="0,6,0,0" ColumnDefinitions="Auto,*,Auto">
+					<Button Grid.Column="2" Command="{Binding CancelInstallCommand}" Content="Cancel"
+					        Background="Transparent" BorderThickness="0" Padding="0" Cursor="Hand"
+					        FontFamily="Cascadia Mono,Consolas,monospace" FontSize="11"
+					        Foreground="{StaticResource Brush.TextDim}" />
+					<TextBlock Grid.Column="0" FontFamily="Cascadia Mono,Consolas,monospace" FontSize="11"
+					           Foreground="{StaticResource Brush.TextDim}"
+					           Text="{Binding DownloadInfoText}" />
+				</Grid>
+			</Grid>
+
+			<!-- Toast -->
+			<Border Grid.Row="4" Margin="32,0,32,12" Padding="14,10" CornerRadius="10"
+			        Background="{StaticResource Brush.Surface}" BorderBrush="{StaticResource Brush.BorderStrong}" BorderThickness="1"
+			        IsVisible="{Binding IsToastVisible}">
+				<TextBlock Text="{Binding ToastMessage}" FontSize="12" Foreground="{StaticResource Brush.TextSecondary}"
+				           TextWrapping="Wrap" />
+			</Border>
+
+			<!-- Action -->
+			<Grid Grid.Row="5" ColumnDefinitions="*,Auto" Margin="32,0,32,26">
+				<Button Grid.Column="0" Classes="primary" Content="{Binding ActionButtonText}"
+				        Command="{Binding LaunchCommand}"
+				        IsEnabled="{Binding ActionButtonEnabled}"
+				        HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+				        Height="46" FontSize="15" FontWeight="SemiBold" CornerRadius="11" />
+				<Button Grid.Column="1" Classes="icon-static" Width="46" Height="46" CornerRadius="11" Margin="10,0,0,0"
+				        Command="{Binding CheckForUpdatesCommand}"
+				        IsEnabled="{Binding !IsBusy}"
+				        ToolTip.Tip="Check for updates again">
+					<Path Classes="glyph" Data="M3 12a9 9 0 019-9 9.75 9.75 0 016.74 2.74L21 8 M21 3v5h-5 M21 12a9 9 0 01-9 9 9.75 9.75 0 01-6.74-2.74L3 16 M3 21v-5h5" />
+				</Button>
+			</Grid>
+
+		</Grid>
+	</Border>
+
+</Window>

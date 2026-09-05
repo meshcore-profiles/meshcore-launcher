@@ -1,0 +1,397 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="MeshCoreLauncher.App"
+             RequestedThemeVariant="Dark">
+
+	<Application.Resources>
+		<ResourceDictionary>
+			<SolidColorBrush x:Key="Brush.Bg" Color="#0B0D12" />
+			<SolidColorBrush x:Key="Brush.Surface" Color="#12141C" />
+			<SolidColorBrush x:Key="Brush.Border" Color="#1E222C" />
+			<SolidColorBrush x:Key="Brush.BorderStrong" Color="#2A3040" />
+			<SolidColorBrush x:Key="Brush.TextPrimary" Color="#F1F3F8" />
+			<SolidColorBrush x:Key="Brush.TextSecondary" Color="#8A93A6" />
+			<SolidColorBrush x:Key="Brush.TextDim" Color="#565F73" />
+			<SolidColorBrush x:Key="Brush.Accent" Color="#22D3EE" />
+			<SolidColorBrush x:Key="Brush.OnAccent" Color="#062229" />
+			<SolidColorBrush x:Key="Brush.Success" Color="#34D399" />
+			<SolidColorBrush x:Key="Brush.Warning" Color="#FBBF24" />
+			<SolidColorBrush x:Key="Brush.Error" Color="#F87171" />
+
+			<LinearGradientBrush x:Key="Brush.AccentGradient" StartPoint="0%,0%" EndPoint="0%,100%">
+				<GradientStop Offset="0" Color="#2BC4DE" />
+				<GradientStop Offset="1" Color="#139DB8" />
+			</LinearGradientBrush>
+			<LinearGradientBrush x:Key="Brush.AccentGradientHover" StartPoint="0%,0%" EndPoint="0%,100%">
+				<GradientStop Offset="0" Color="#45D6EE" />
+				<GradientStop Offset="1" Color="#1AB4CE" />
+			</LinearGradientBrush>
+			<ControlTheme x:Key="{x:Type ScrollBar}" TargetType="ScrollBar">
+				<Setter Property="Background" Value="Transparent" />
+				<Setter Property="Template">
+					<ControlTemplate>
+						<Border Background="Transparent">
+							<Track Name="PART_Track"
+							       Minimum="{TemplateBinding Minimum}"
+							       Maximum="{TemplateBinding Maximum}"
+							       Value="{TemplateBinding Value, Mode=TwoWay}"
+							       ViewportSize="{TemplateBinding ViewportSize}"
+							       Orientation="{TemplateBinding Orientation}"
+							       IsDirectionReversed="True">
+								<Track.Thumb>
+									<Thumb Background="{StaticResource Brush.BorderStrong}">
+										<Thumb.Template>
+											<ControlTemplate>
+												<Border Background="{TemplateBinding Background}" CornerRadius="3" Margin="2,1" />
+											</ControlTemplate>
+										</Thumb.Template>
+									</Thumb>
+								</Track.Thumb>
+							</Track>
+						</Border>
+					</ControlTemplate>
+				</Setter>
+				<Style Selector="^:vertical">
+					<Setter Property="Width" Value="8" />
+				</Style>
+				<Style Selector="^:horizontal">
+					<Setter Property="Height" Value="8" />
+				</Style>
+			</ControlTheme>
+
+			<!-- Chrome/icon buttons share this minimal template instead of FluentTheme's stock one.
+			     Two Avalonia bugs on this version drove its shape, both confirmed by testing:
+			     1) BrushTransition itself - animating a Background/Foreground/Stroke brush at all,
+			     regardless of which element or control it's attached to - causes a one-frame
+			     pointerover flicker. The hover tint here is therefore a separate overlay Border
+			     faded via DoubleTransition on Opacity, never a brush color transition.
+			     2) The ContentPresenter must not be named "PART_ContentPresenter": that's the name
+			     FluentTheme's own Button ControlTheme targets internally, and Avalonia selectors
+			     match by name regardless of which Template produced the element - so FluentTheme's
+			     own :pointerover/:pressed background Setters were firing on it too, painting a
+			     second highlight under the glyph. Named "ButtonContent" instead to avoid the clash.
+			     No Style below ever Setters Background/Foreground on the Button control itself
+			     either; every state targets these named template parts, same as Button.primary. -->
+			<ControlTemplate x:Key="SimpleButtonTemplate" TargetType="Button">
+				<Border Name="Root" CornerRadius="{TemplateBinding CornerRadius}" ClipToBounds="True">
+					<Panel>
+						<Border Name="HoverLayer" Opacity="0">
+							<Border.Transitions>
+								<Transitions>
+									<DoubleTransition Property="Opacity" Duration="0:0:0.12" />
+								</Transitions>
+							</Border.Transitions>
+						</Border>
+						<ContentPresenter Name="ButtonContent" Content="{TemplateBinding Content}"
+						                  HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+						                  VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+					</Panel>
+				</Border>
+			</ControlTemplate>
+		</ResourceDictionary>
+	</Application.Resources>
+
+	<Application.Styles>
+		<FluentTheme />
+
+		<!-- Pointer-placed tooltips sit under the cursor and steal the hit-test from the
+		     control underneath, causing a spurious pointerover flicker on hide/show. -->
+		<Style Selector="Button">
+			<Setter Property="ToolTip.Placement" Value="Bottom" />
+		</Style>
+
+		<!-- FluentTheme's base Button ControlTheme applies RenderTransform: scale(0.98) on
+		     :pressed (with its own TransformOperationsTransition) directly on the Button itself,
+		     regardless of which Template it uses - so every custom-templated button here still
+		     inherited it. That's the same RenderTransform/hit-test desync bug already worked
+		     around for the settings-gear spin (AvaloniaUI/Avalonia#1558, #5846): the pointer can
+		     be read as outside the button for a frame while the scale is mid-transition, which
+		     read as a flicker. These buttons intentionally have no dedicated :pressed look (hover
+		     styling is what carries through a click) - this only cancels FluentTheme's own transform. -->
+		<Style Selector="Button.chrome, Button.icon, Button.icon-static, Button.primary">
+			<Setter Property="RenderTransform" Value="none" />
+		</Style>
+		<Style Selector="Button.chrome:pressed, Button.icon:pressed, Button.icon-static:pressed, Button.primary:pressed">
+			<Setter Property="RenderTransform" Value="none" />
+		</Style>
+
+		<!-- ============ Window chrome buttons ============ -->
+		<!-- Base and :pointerover both target the named template parts (/template/ Border#Root,
+		     ContentPresenter#ButtonContent) - never Background/Foreground on the Button
+		     control itself. See the note on SimpleButtonTemplate above for why. -->
+		<Style Selector="Button.chrome">
+			<Setter Property="Width" Value="40" />
+			<Setter Property="Height" Value="32" />
+			<Setter Property="BorderThickness" Value="0" />
+			<Setter Property="CornerRadius" Value="6" />
+			<Setter Property="FontSize" Value="13" />
+			<Setter Property="Cursor" Value="Hand" />
+			<Setter Property="HorizontalContentAlignment" Value="Center" />
+			<Setter Property="VerticalContentAlignment" Value="Center" />
+			<Setter Property="Template" Value="{StaticResource SimpleButtonTemplate}" />
+		</Style>
+		<Style Selector="Button.chrome /template/ ContentPresenter#ButtonContent">
+			<Setter Property="Foreground" Value="{StaticResource Brush.TextSecondary}" />
+		</Style>
+		<Style Selector="Button.chrome /template/ Border#HoverLayer">
+			<Setter Property="Background" Value="#1A1E28" />
+		</Style>
+		<Style Selector="Button.chrome.close /template/ Border#HoverLayer">
+			<Setter Property="Background" Value="#E5484D" />
+		</Style>
+		<Style Selector="Button.chrome:pointerover /template/ Border#HoverLayer">
+			<Setter Property="Opacity" Value="1" />
+		</Style>
+		<Style Selector="Button.chrome:pointerover /template/ ContentPresenter#ButtonContent">
+			<Setter Property="Foreground" Value="{StaticResource Brush.TextPrimary}" />
+		</Style>
+		<Style Selector="Button.chrome.close:pointerover /template/ ContentPresenter#ButtonContent">
+			<Setter Property="Foreground" Value="White" />
+		</Style>
+
+		<!-- Small icon-only chrome button (e.g. settings gear) -->
+		<Style Selector="Button.icon">
+			<Setter Property="Width" Value="32" />
+			<Setter Property="Height" Value="32" />
+			<Setter Property="BorderThickness" Value="0" />
+			<Setter Property="CornerRadius" Value="16" />
+			<Setter Property="FontSize" Value="14" />
+			<Setter Property="HorizontalContentAlignment" Value="Center" />
+			<Setter Property="VerticalContentAlignment" Value="Center" />
+			<Setter Property="Cursor" Value="Hand" />
+			<Setter Property="Template" Value="{StaticResource SimpleButtonTemplate}" />
+		</Style>
+		<Style Selector="Button.icon /template/ ContentPresenter#ButtonContent">
+			<Setter Property="Foreground" Value="{StaticResource Brush.TextSecondary}" />
+		</Style>
+		<Style Selector="Button.icon /template/ Border#HoverLayer">
+			<Setter Property="Background" Value="#1A1E28" />
+		</Style>
+		<Style Selector="Button.icon:pointerover /template/ Border#HoverLayer">
+			<Setter Property="Opacity" Value="1" />
+		</Style>
+		<Style Selector="Button.icon:pointerover /template/ ContentPresenter#ButtonContent">
+			<Setter Property="Foreground" Value="{StaticResource Brush.Accent}" />
+		</Style>
+		<Style Selector="Button.icon Path.glyph">
+			<Setter Property="RenderTransform" Value="rotate(0deg)" />
+			<Setter Property="Transitions">
+				<Transitions>
+					<TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.35" Easing="CubicEaseOut" />
+				</Transitions>
+			</Setter>
+		</Style>
+		<Style Selector="Button.icon:pointerover Path.glyph">
+			<Setter Property="RenderTransform" Value="rotate(45deg)" />
+		</Style>
+
+		<!-- Icon-only button without the gear's rotate-on-hover (e.g. refresh) -->
+		<Style Selector="Button.icon-static">
+			<Setter Property="Width" Value="32" />
+			<Setter Property="Height" Value="32" />
+			<Setter Property="BorderThickness" Value="0" />
+			<Setter Property="CornerRadius" Value="16" />
+			<Setter Property="FontSize" Value="14" />
+			<Setter Property="HorizontalContentAlignment" Value="Center" />
+			<Setter Property="VerticalContentAlignment" Value="Center" />
+			<Setter Property="Cursor" Value="Hand" />
+			<Setter Property="Template" Value="{StaticResource SimpleButtonTemplate}" />
+		</Style>
+		<Style Selector="Button.icon-static /template/ ContentPresenter#ButtonContent">
+			<Setter Property="Foreground" Value="{StaticResource Brush.TextSecondary}" />
+		</Style>
+		<Style Selector="Button.icon-static /template/ Border#HoverLayer">
+			<Setter Property="Background" Value="#1A1E28" />
+		</Style>
+		<Style Selector="Button.icon-static:pointerover /template/ Border#HoverLayer">
+			<Setter Property="Opacity" Value="1" />
+		</Style>
+		<Style Selector="Button.icon-static:pointerover /template/ ContentPresenter#ButtonContent">
+			<Setter Property="Foreground" Value="{StaticResource Brush.Accent}" />
+		</Style>
+		<Style Selector="Button.icon:disabled, Button.icon-static:disabled">
+			<Setter Property="Opacity" Value="0.35" />
+			<Setter Property="Cursor" Value="Arrow" />
+		</Style>
+
+		<!-- ============ Primary action button ============ -->
+		<!-- Background is a two-stop LinearGradientBrush; BrushTransition does not interpolate
+		     between gradient brushes, so the hover state is a separate overlay layer whose
+		     Opacity is what actually animates. The glow uses BoxShadow (not Effect/DropShadowEffect)
+		     because Effect has no built-in transition support - it would otherwise pop in/out on
+		     a single frame instead of fading smoothly. -->
+		<Style Selector="Button.primary">
+			<Setter Property="Background" Value="{StaticResource Brush.AccentGradient}" />
+			<Setter Property="Foreground" Value="{StaticResource Brush.OnAccent}" />
+			<Setter Property="BorderThickness" Value="0" />
+			<Setter Property="Padding" Value="0" />
+			<Setter Property="HorizontalContentAlignment" Value="Center" />
+			<Setter Property="VerticalContentAlignment" Value="Center" />
+			<Setter Property="Cursor" Value="Hand" />
+			<Setter Property="Template">
+				<ControlTemplate>
+					<Border Name="Root" Background="{TemplateBinding Background}"
+					        CornerRadius="{TemplateBinding CornerRadius}"
+					        ClipToBounds="True"
+					        BoxShadow="0 0 0 0 Transparent">
+						<Border.Transitions>
+							<Transitions>
+								<BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.2" />
+							</Transitions>
+						</Border.Transitions>
+						<Panel>
+							<!-- No CornerRadius here: Root already clips these to its rounded shape.
+							     Two independently-rounded Borders stacked on top of each other used to
+							     leave a hard-edged seam right at the corner while the overlay's Opacity
+							     was mid-transition, which read as a "flash" plus square corners. -->
+							<Border Name="HoverLayer" Background="{StaticResource Brush.AccentGradientHover}"
+							        Opacity="0">
+								<Border.Transitions>
+									<Transitions>
+										<DoubleTransition Property="Opacity" Duration="0:0:0.2" />
+									</Transitions>
+								</Border.Transitions>
+							</Border>
+							<ContentPresenter Content="{TemplateBinding Content}"
+							                  HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+							                  VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+							                  Foreground="{TemplateBinding Foreground}"
+							                  FontSize="{TemplateBinding FontSize}"
+							                  FontWeight="{TemplateBinding FontWeight}" />
+						</Panel>
+					</Border>
+				</ControlTemplate>
+			</Setter>
+		</Style>
+		<Style Selector="Button.primary:pointerover /template/ Border#Root">
+			<Setter Property="BoxShadow" Value="0 8 26 0 #8C22D3EE" />
+		</Style>
+		<Style Selector="Button.primary:pointerover /template/ Border#HoverLayer">
+			<Setter Property="Opacity" Value="1" />
+		</Style>
+		<Style Selector="Button.primary:disabled">
+			<Setter Property="Background" Value="#1B2130" />
+			<Setter Property="Foreground" Value="#5B6478" />
+		</Style>
+
+		<!-- ============ Custom toggle switch ============ -->
+		<Style Selector="ToggleButton.switch">
+			<Setter Property="Width" Value="42" />
+			<Setter Property="Height" Value="24" />
+			<Setter Property="Padding" Value="0" />
+			<Setter Property="BorderThickness" Value="0" />
+			<Setter Property="Cursor" Value="Hand" />
+			<Setter Property="Template">
+				<ControlTemplate>
+					<Border x:Name="Track" CornerRadius="12" Background="{StaticResource Brush.Border}"
+					        BorderBrush="{StaticResource Brush.BorderStrong}" BorderThickness="1">
+						<Border.Transitions>
+							<Transitions>
+								<BrushTransition Property="Background" Duration="0:0:0.16" />
+								<BrushTransition Property="BorderBrush" Duration="0:0:0.16" />
+							</Transitions>
+						</Border.Transitions>
+						<Panel>
+							<Ellipse x:Name="Thumb" Width="16" Height="16" Fill="{StaticResource Brush.TextSecondary}"
+							         HorizontalAlignment="Left" Margin="3,0,0,0">
+								<Ellipse.Transitions>
+									<Transitions>
+										<ThicknessTransition Property="Margin" Duration="0:0:0.18" Easing="CubicEaseOut" />
+										<BrushTransition Property="Fill" Duration="0:0:0.16" />
+									</Transitions>
+								</Ellipse.Transitions>
+							</Ellipse>
+						</Panel>
+					</Border>
+				</ControlTemplate>
+			</Setter>
+		</Style>
+		<Style Selector="ToggleButton.switch:checked /template/ Border#Track">
+			<Setter Property="Background" Value="{StaticResource Brush.Accent}" />
+			<Setter Property="BorderBrush" Value="{StaticResource Brush.Accent}" />
+		</Style>
+		<Style Selector="ToggleButton.switch:checked /template/ Ellipse#Thumb">
+			<Setter Property="Margin" Value="21,0,0,0" />
+			<Setter Property="Fill" Value="{StaticResource Brush.OnAccent}" />
+		</Style>
+		<Style Selector="ToggleButton.switch:disabled">
+			<Setter Property="Opacity" Value="0.4" />
+		</Style>
+
+		<!-- ============ Ambient glow (hero) ============ -->
+		<!-- An infinite Style.Animations loop here used to repaint the whole window every
+		     frame, which trips a still-open Avalonia hit-test bug (dirty-rect covers the
+		     whole window -> HitTester.HitTestFirst briefly returns null under a stationary
+		     pointer -> every hovered button's :pointerover flickers off for one frame).
+		     See https://github.com/AvaloniaUI/Avalonia/issues/18515. Keep this glow static. -->
+		<Style Selector="Ellipse.pulse-glow">
+			<Setter Property="Opacity" Value="0.55" />
+		</Style>
+
+		<!-- ============ Spinner buttons (e.g. NumericUpDown up/down) ============ -->
+		<Style Selector="RepeatButton">
+			<Setter Property="Cursor" Value="Hand" />
+		</Style>
+
+		<!-- ============ Status dot ============ -->
+		<Style Selector="Ellipse.status-dot">
+			<Setter Property="Transitions">
+				<Transitions>
+					<BrushTransition Property="Fill" Duration="0:0:0.3" />
+				</Transitions>
+			</Setter>
+		</Style>
+
+		<!-- ============ Scrollbar ============ -->
+		<Style Selector="ScrollBar Thumb">
+			<Setter Property="Transitions">
+				<Transitions>
+					<BrushTransition Property="Background" Duration="0:0:0.15" />
+				</Transitions>
+			</Setter>
+		</Style>
+		<Style Selector="ScrollBar Thumb:pointerover">
+			<Setter Property="Background" Value="{StaticResource Brush.Accent}" />
+		</Style>
+
+		<!-- ============ Title bar glyph icons ============ -->
+		<Style Selector="Path.glyph">
+			<Setter Property="Width" Value="14" />
+			<Setter Property="Height" Value="14" />
+			<Setter Property="Stretch" Value="Uniform" />
+			<Setter Property="Fill" Value="{x:Null}" />
+			<Setter Property="Stroke" Value="{StaticResource Brush.TextSecondary}" />
+			<Setter Property="StrokeThickness" Value="2" />
+			<Setter Property="StrokeLineCap" Value="Round" />
+			<Setter Property="StrokeJoin" Value="Round" />
+		</Style>
+		<!-- These target the descendant Path, never the Button control itself, so they're
+		     unaffected by the pointerover-flicker issue described on SimpleButtonTemplate. -->
+		<Style Selector="Button.icon:pointerover Path.glyph">
+			<Setter Property="Stroke" Value="{StaticResource Brush.Accent}" />
+		</Style>
+		<Style Selector="Button.chrome:pointerover Path.glyph">
+			<Setter Property="Stroke" Value="{StaticResource Brush.TextPrimary}" />
+		</Style>
+		<Style Selector="Button.chrome.close:pointerover Path.glyph">
+			<Setter Property="Stroke" Value="White" />
+		</Style>
+
+		<!-- ============ Settings window rows ============ -->
+		<Style Selector="Border.setting-row">
+			<Setter Property="Padding" Value="0,12" />
+		</Style>
+		<Style Selector="TextBlock.setting-label">
+			<Setter Property="FontSize" Value="13.5" />
+			<Setter Property="FontWeight" Value="Medium" />
+			<Setter Property="Foreground" Value="{StaticResource Brush.TextPrimary}" />
+		</Style>
+		<Style Selector="TextBlock.setting-desc">
+			<Setter Property="FontSize" Value="12" />
+			<Setter Property="Foreground" Value="{StaticResource Brush.TextDim}" />
+			<Setter Property="TextWrapping" Value="Wrap" />
+			<Setter Property="Margin" Value="0,2,0,0" />
+		</Style>
+	</Application.Styles>
+
+</Application>

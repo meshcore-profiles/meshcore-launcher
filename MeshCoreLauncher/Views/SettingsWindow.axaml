@@ -1,0 +1,245 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:MeshCoreLauncher.ViewModels"
+        x:Class="MeshCoreLauncher.Views.SettingsWindow"
+        x:DataType="vm:SettingsWindowViewModel"
+        Title="Settings"
+        Icon="avares://MeshCoreLauncher/Assets/icon.ico"
+        Width="560" Height="560"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner"
+        Background="Transparent"
+        TransparencyLevelHint="Transparent"
+        WindowDecorations="None">
+
+	<Border CornerRadius="16" Background="{StaticResource Brush.Bg}"
+	        BorderBrush="{StaticResource Brush.Border}" BorderThickness="1" ClipToBounds="True">
+		<Grid RowDefinitions="44,Auto,*">
+
+			<!-- Title bar -->
+			<Grid Grid.Row="0" ColumnDefinitions="*,Auto" Background="Transparent" Cursor="SizeAll" PointerPressed="TitleBar_PointerPressed" Margin="18,0,8,0">
+				<TextBlock Grid.Column="0" Text="Settings" VerticalAlignment="Center"
+				           FontSize="13" FontWeight="Medium" Foreground="{StaticResource Brush.TextSecondary}" />
+				<Button Grid.Column="1" Classes="chrome close" Click="Close_Click">
+					<Path Classes="glyph" Data="M18 6L6 18M6 6l12 12" />
+				</Button>
+			</Grid>
+
+			<Border Grid.Row="1" Height="1">
+				<Border.Background>
+					<LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
+						<GradientStop Offset="0" Color="#0022D3EE" />
+						<GradientStop Offset="0.5" Color="#8022D3EE" />
+						<GradientStop Offset="1" Color="#0022D3EE" />
+					</LinearGradientBrush>
+				</Border.Background>
+			</Border>
+
+			<ScrollViewer Grid.Row="2" Margin="28,10,14,20" Padding="0,0,20,0">
+				<StackPanel>
+
+					<TextBlock Text="Startup" FontSize="13.5" FontWeight="SemiBold" Foreground="{StaticResource Brush.TextDim}"
+					           Margin="0,10,0,4" />
+
+					<Border Classes="setting-row">
+						<Grid ColumnDefinitions="*,Auto">
+							<StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
+								<TextBlock Classes="setting-label" Text="Launch on system startup" />
+								<TextBlock Classes="setting-desc" Text="Start MeshCore Launcher automatically when you sign in." />
+							</StackPanel>
+							<ToggleButton Grid.Column="1" Classes="switch" VerticalAlignment="Center"
+							              IsChecked="{Binding LaunchOnSystemStartup}" />
+						</Grid>
+					</Border>
+
+					<Border Height="1" Background="{StaticResource Brush.Border}" />
+
+					<Border Classes="setting-row">
+						<Grid ColumnDefinitions="*,Auto">
+							<StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
+								<TextBlock Classes="setting-label" Text="Start minimized to tray" />
+								<TextBlock Classes="setting-desc" Text="Only applies when launching on system startup." />
+							</StackPanel>
+							<ToggleButton Grid.Column="1" Classes="switch" VerticalAlignment="Center"
+							              IsChecked="{Binding StartMinimizedToTray}"
+							              IsEnabled="{Binding LaunchOnSystemStartup}" />
+						</Grid>
+					</Border>
+
+					<Border Height="1" Background="{StaticResource Brush.Border}" />
+
+					<Border Classes="setting-row">
+						<Grid ColumnDefinitions="*,Auto">
+							<StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
+								<TextBlock Classes="setting-label" Text="Automatically launch MeshCore" />
+								<TextBlock Classes="setting-desc" Text="Launch MeshCore right away whenever the launcher starts, installing an update first if needed." />
+							</StackPanel>
+							<ToggleButton Grid.Column="1" Classes="switch" VerticalAlignment="Center"
+							              IsChecked="{Binding AutoLaunchMeshCoreOnStartup}" />
+						</Grid>
+					</Border>
+
+					<TextBlock Text="Tray behavior" FontSize="13.5" FontWeight="SemiBold" Foreground="{StaticResource Brush.TextDim}"
+					           Margin="0,20,0,4" />
+
+					<Border Classes="setting-row">
+						<Grid ColumnDefinitions="*,Auto">
+							<StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
+								<TextBlock Classes="setting-label" Text="Minimize to tray on close" />
+								<TextBlock Classes="setting-desc" Text="Closing the window hides the launcher instead of quitting it." />
+							</StackPanel>
+							<ToggleButton Grid.Column="1" Classes="switch" VerticalAlignment="Center"
+							              IsChecked="{Binding MinimizeToTrayOnClose}" />
+						</Grid>
+					</Border>
+
+					<Border Height="1" Background="{StaticResource Brush.Border}" />
+
+					<Border Classes="setting-row">
+						<Grid ColumnDefinitions="*,Auto">
+							<StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
+								<TextBlock Classes="setting-label" Text="Minimize after launching MeshCore" />
+								<TextBlock Classes="setting-desc" Text="Hide the launcher to the tray once MeshCore starts." />
+							</StackPanel>
+							<ToggleButton Grid.Column="1" Classes="switch" VerticalAlignment="Center"
+							              IsChecked="{Binding MinimizeToTrayAfterLaunch}"
+							              IsEnabled="{Binding !ExitAfterLaunch}" />
+						</Grid>
+					</Border>
+
+					<Border Height="1" Background="{StaticResource Brush.Border}" />
+
+					<Border Classes="setting-row">
+						<Grid ColumnDefinitions="*,Auto">
+							<StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
+								<TextBlock Classes="setting-label" Text="Exit after launching MeshCore" />
+								<TextBlock Classes="setting-desc" Text="Close the launcher completely instead of keeping it in the tray. Overrides the setting above." />
+							</StackPanel>
+							<ToggleButton Grid.Column="1" Classes="switch" VerticalAlignment="Center"
+							              IsChecked="{Binding ExitAfterLaunch}" />
+						</Grid>
+					</Border>
+
+					<TextBlock Text="Updates" FontSize="13.5" FontWeight="SemiBold" Foreground="{StaticResource Brush.TextDim}"
+					           Margin="0,20,0,4" />
+
+					<Border Classes="setting-row">
+						<Grid ColumnDefinitions="*,Auto">
+							<StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
+								<TextBlock Classes="setting-label" Text="Recheck for updates periodically" />
+								<TextBlock Classes="setting-desc" Text="Automatically check again while the launcher is open." />
+							</StackPanel>
+							<ToggleButton Grid.Column="1" Classes="switch" VerticalAlignment="Center"
+							              IsChecked="{Binding AutoRecheckForUpdatesEnabled}" />
+						</Grid>
+					</Border>
+
+					<Border Height="1" Background="{StaticResource Brush.Border}" />
+
+					<Border Classes="setting-row">
+						<Grid ColumnDefinitions="*,Auto">
+							<StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
+								<TextBlock Classes="setting-label" Text="Recheck interval" />
+								<TextBlock Classes="setting-desc" Text="How often to check for updates, in minutes." />
+							</StackPanel>
+							<NumericUpDown Grid.Column="1" VerticalAlignment="Center" Width="140"
+							               Minimum="1" Maximum="1440" Increment="5" FormatString="0"
+							               Value="{Binding AutoRecheckIntervalMinutes}"
+							               IsEnabled="{Binding AutoRecheckForUpdatesEnabled}" />
+						</Grid>
+					</Border>
+
+					<Border Height="1" Background="{StaticResource Brush.Border}" />
+
+					<Border Classes="setting-row">
+						<Grid ColumnDefinitions="*,Auto">
+							<StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
+								<TextBlock Classes="setting-label" Text="Notify about available updates" />
+								<TextBlock Classes="setting-desc" Text="Show it on the tray icon's tooltip when an update or install is available." />
+							</StackPanel>
+							<ToggleButton Grid.Column="1" Classes="switch" VerticalAlignment="Center"
+							              IsChecked="{Binding NotifyOnUpdateAvailable}" />
+						</Grid>
+					</Border>
+
+					<Border Height="1" Background="{StaticResource Brush.Border}" />
+
+					<Border Classes="setting-row">
+						<Grid ColumnDefinitions="*,Auto">
+							<StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
+								<TextBlock Classes="setting-label" Text="Ask before closing MeshCore" />
+								<TextBlock Classes="setting-desc" Text="Confirm before closing a running MeshCore to install an update. Otherwise it's closed automatically." />
+							</StackPanel>
+							<ToggleButton Grid.Column="1" Classes="switch" VerticalAlignment="Center"
+							              IsChecked="{Binding AskBeforeClosingMeshCore}" />
+						</Grid>
+					</Border>
+
+					<StackPanel IsVisible="{Binding IsLinux}">
+						<TextBlock Text="Linux" FontSize="13.5" FontWeight="SemiBold" Foreground="{StaticResource Brush.TextDim}"
+						           Margin="0,20,0,4" />
+
+						<Border Classes="setting-row">
+							<Grid ColumnDefinitions="*,Auto">
+								<StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
+									<TextBlock Classes="setting-label" Text="Skip FUSE, always extract AppImage" />
+									<TextBlock Classes="setting-desc" Text="Bypasses FUSE entirely and extracts MeshCore's AppImage before every launch. Enable this if launching fails with a FUSE-related error and installing it doesn't help." />
+								</StackPanel>
+								<ToggleButton Grid.Column="1" Classes="switch" VerticalAlignment="Center"
+								              IsChecked="{Binding ForceAppImageExtractAndRun}" />
+							</Grid>
+						</Border>
+					</StackPanel>
+
+					<TextBlock Text="Diagnostics" FontSize="13.5" FontWeight="SemiBold" Foreground="{StaticResource Brush.TextDim}"
+					           Margin="0,20,0,4" />
+
+					<Border Classes="setting-row">
+						<Grid ColumnDefinitions="*,Auto">
+							<StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
+								<TextBlock Classes="setting-label" Text="Log file" />
+								<TextBlock Classes="setting-desc" Text="Open launcher.log - useful when reporting a problem." />
+							</StackPanel>
+							<Button Grid.Column="1" Content="Open" Command="{Binding OpenLogFileCommand}"
+							        Background="Transparent" BorderThickness="1" BorderBrush="{StaticResource Brush.BorderStrong}"
+							        Foreground="{StaticResource Brush.TextSecondary}" CornerRadius="8"
+							        Padding="14,8" Cursor="Hand" />
+						</Grid>
+					</Border>
+
+					<Border Height="1" Background="{StaticResource Brush.Border}" />
+
+					<Border Classes="setting-row">
+						<Grid ColumnDefinitions="*,Auto">
+							<StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
+								<TextBlock Classes="setting-label" Text="Download cache" />
+								<TextBlock Classes="setting-desc" Text="Delete cached downloaded installers to free up space." />
+							</StackPanel>
+							<Button Grid.Column="1" Content="Clear" Command="{Binding ClearDownloadCacheCommand}"
+							        Background="Transparent" BorderThickness="1" BorderBrush="{StaticResource Brush.BorderStrong}"
+							        Foreground="{StaticResource Brush.TextSecondary}" CornerRadius="8"
+							        Padding="14,8" Cursor="Hand" />
+						</Grid>
+					</Border>
+
+					<Border Height="1" Background="{StaticResource Brush.Border}" />
+
+					<Border Classes="setting-row">
+						<Grid ColumnDefinitions="*,Auto">
+							<StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
+								<TextBlock Classes="setting-label" Text="Reset settings" />
+								<TextBlock Classes="setting-desc" Text="Restore every option on this page to its default value." />
+							</StackPanel>
+							<Button Grid.Column="1" Content="Reset" Command="{Binding ResetToDefaultsCommand}"
+							        Background="Transparent" BorderThickness="1" BorderBrush="{StaticResource Brush.BorderStrong}"
+							        Foreground="{StaticResource Brush.TextSecondary}" CornerRadius="8"
+							        Padding="14,8" Cursor="Hand" />
+						</Grid>
+					</Border>
+
+				</StackPanel>
+			</ScrollViewer>
+		</Grid>
+	</Border>
+
+</Window>
